@@ -69,14 +69,15 @@ let products = [
 // Improved version of cartList. Cart is an array of products (objects), but each one has a quantity field to define its quantity, so these products are not repeated.
 let cart = [];
 
-let total = document.getElementById('total_price');
+let total = 0;
 let subtotalWithDiscount = 0
+products = products.map(v => ({ ...v, quantity: 1 }))
 
 // Exercise 1
 /*function buy(id) {
     // 1. Loop for to the array products to get the item to add to cart
     // 2. Add found product to the cartList array
-
+    
     let foundProduct = products[id - 1]
 
     for (x = 0; x < products.length; x++) {
@@ -134,7 +135,9 @@ function applyPromotionsCart() {
     for (x = 0; x < cart.length; x++) {
         if (cart[x].name === 'cooking oil' && cart[x].quantity >= 3) {
             cart[x].subtotalWithDiscount = 10
-            console.log(cart[x].subtotalWithDiscount)
+        }
+        else{
+            cart[x].subtotalWithDiscount = cart[x].price
         }
     }
 
@@ -142,6 +145,9 @@ function applyPromotionsCart() {
         if (cart[x].name === 'Instant cupcake mixture' && cart[x].quantity >= 10) {
             cart[x].subtotalWithDiscount = ((cart[x].price) * 2) / 3
             console.log(cart[x].subtotalWithDiscount)
+        }
+        else{
+            cart[x].subtotalWithDiscount = cart[x].price
         }
     }
 }
@@ -166,6 +172,17 @@ function printCart() {
        newCell = row.insertCell(-1);
        let newItemDiscount = document.createTextNode(cart[x].subtotalWithDiscount + '€')
        newCell.appendChild(newItemDiscount)
+        
+       //Adds a remove from cart button at the end of every row
+       newCell = row.insertCell(-1);
+       let button = document.createElement("button");
+       button.innerHTML = "Remove from cart";
+       button.classList.add("btn", "btn-primary", "m-3");
+       button.onclick = function() {
+           let id = this.getAttribute("data-item-id");
+           removeFromCart(id);
+        };
+        newCell.appendChild(button);
     }
 }
 
@@ -178,34 +195,38 @@ function addToCart(id) {
     // 1. Loop for to the array products to get the item to add to cart
     // 2. Add found product to the cart array or update its quantity in case it has been added previously.
 
-    products = products.map(v => ({ ...v, quantity: 1 }))
+    let productIndex = cart.findIndex(p => p.id === id);
+    let foundProduct = products[id - 1];
 
-    let foundProduct = products[id - 1]
-
-    for (x = 0; x < products.length; x++) {
-        if (id - 1 === x) {
-            cart.push(foundProduct)
-        }
+    if (productIndex === -1) {
+        cart.push({...foundProduct, quantity: 1});
+    } else {
+        cart[productIndex].quantity += 1;
     }
 
-    for (x = 0; x < cart.length; x++) {
-        let index = cart.map(function (e) { return e.name; }).indexOf(cart[x].name);
+    calculateTotal();
+    applyPromotionsCart();
 
-        if (index === -1) {
-            cart.push(cart[x])
-        }
-        if (index !== -1) {
-            cart[index].quantity += 1
-        }
-    }
-    
-    calculateTotal()
+    console.log(cart);
 }
 
 // Exercise 9
 function removeFromCart(id) {
     // 1. Loop for to the array products to get the item to add to cart
     // 2. Add found product to the cartList array
+    for (let i = 0; i < cart.length; i++) {
+        if (cart[i].id === id) {
+            cart.splice(i, 1);
+            break;
+        }
+    }
+    // update the modal with the current cart
+
+    calculateTotal()
+    applyPromotionsCart();
+
+    printCart()
+
 }
 
 function open_modal() {
